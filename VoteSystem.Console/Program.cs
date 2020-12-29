@@ -63,6 +63,7 @@ namespace VoteSystem.Cosnole
                 catch (Exception)
                 {
                     Console.WriteLine("We don't have information about you");
+                    Console.ReadLine();
                     response = false;
                 }
                 if (response == false)
@@ -82,6 +83,7 @@ namespace VoteSystem.Cosnole
                         "2. Add Choice to Poll;\n" +
                         "3. Vote;\n" +
                         "4. Give Policy;\n"+
+                        "5. Show poll results;\n"+
                         "0. Exit this shit;");
                     var answer = Int32.Parse(Console.ReadLine());
                         switch (answer)
@@ -143,10 +145,11 @@ namespace VoteSystem.Cosnole
                                 string poll_temp_name = Console.ReadLine(); 
                                 Poll poll2 = pollService.GetPoll(poll_temp_name);
                                 bool policyresponse2 = policyChecker.CheckPolicy(user_temp_id, poll2.Id);
-                                bool multiplevoteresponse = voteService.CheckVote(user_temp_id);
-                                if(multiplevoteresponse == false)
+                                bool multiplevoteresponse = voteService.CheckIfVoted(user_temp_id, poll_temp_name);
+
+                                if (multiplevoteresponse == true)
                                 {
-                                    Console.WriteLine("You cant vote more");
+                                    Console.WriteLine("You have already voted");
                                     Console.ReadLine();
                                     break;
                                 }
@@ -219,6 +222,22 @@ namespace VoteSystem.Cosnole
                                 {
                                     Console.WriteLine("Fuck you dumbass paralytic idiot who cannot type needed shit!");
                                 }
+                                break;
+                            #endregion
+                            #region Results
+                            case 5:
+                                Console.WriteLine("Available polls: ");
+                                foreach (var a in pollService.ShowAllPolls())
+                                {
+                                    Console.WriteLine($"{a.Name} \n {a.Description}\n Time left: {a.PollEndDate - DateTime.Now} \n");
+                                }
+                                Console.WriteLine("Enter Pollname to see the results:");
+                                string pollResultName = Console.ReadLine();
+                                foreach (var a in voteService.GetPollResult(pollResultName))
+                                {
+                                    Console.WriteLine($"{a.Key.ToString()}  - {a.Value.ToString()} ");
+                                }
+                                Console.ReadLine();
                                 break;
                             #endregion
                             #region Exit

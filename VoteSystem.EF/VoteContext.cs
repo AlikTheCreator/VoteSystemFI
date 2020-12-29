@@ -21,6 +21,7 @@ namespace VoteSystem.EF
         public DbSet<Region> Regions { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Vote> Votes { get; set; }
+        public DbSet<VoteChoice> VoteChoices { get; set; }
         public DbSet<RegionPolicy> RegionPolicies { get; set; }
         public DbSet<UserPolicy> UserPolicies { get; set; }
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -31,7 +32,7 @@ namespace VoteSystem.EF
             modelBuilder.Entity<Poll>().HasMany(p => p.Choices).WithRequired(c => c.Poll);
             modelBuilder.Entity<Region>().HasMany(r => r.RegionPolicies).WithRequired(p => p.Region);
             modelBuilder.Entity<User>().HasMany(u => u.UserPolicies).WithRequired(p => p.user);
-            modelBuilder.Entity<Vote>();
+            modelBuilder.Entity<Vote>().HasMany(v => v.VoteChoices).WithRequired(vc => vc.Vote);
         }
     }
 }

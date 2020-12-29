@@ -9,9 +9,11 @@ namespace VoteSystem.Data.Repositories
     {
         void Create(Vote vote);
         void Update(Vote vote);
+        void CreateVoteChoice(VoteChoice voteChoice);
+        bool IsVoted(int userId, string pollName);
         Vote GetVote(int voteId);
         List<Vote> GetAllForUser(int userId);
-        Dictionary<int, int> GetResultInVote(int voteId);
-        public bool ExistingUser(int userId);
+        Dictionary<string, int> GetResultInPoll(int pollId);
+        bool ExistingUser(int userId);
     }
 }

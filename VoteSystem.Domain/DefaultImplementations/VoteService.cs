@@ -18,6 +18,11 @@ namespace VoteSystem.Domain.DefaultImplementations
             _pollRepos = pollRepository;
             _voteRepos = voteRepository;
         }
+        public Dictionary<string, int> GetPollResult(string pollName)
+        {
+            int pollId = _pollRepos.Get(pollName).Id;
+            return _voteRepos.GetResultInPoll(pollId);
+        }
         public Vote Vote(int userId, int Idchoice)
         {
             var votechoice = new VoteChoice()
@@ -35,17 +40,9 @@ namespace VoteSystem.Domain.DefaultImplementations
             _voteRepos.Create(vote);
             return vote;
         }
-        public bool CheckVote(int userId, string pollName)
+        public bool CheckIfVoted(int userId, string pollName)
         {
-            foreach (var a in _voteRepos.GetAllForUser(userId))
-            {
-                if (a.Id == )
-                {
-
-                }
-            }
-
-            return true;
+            return _voteRepos.IsVoted(userId, pollName);
         }
     }
 }

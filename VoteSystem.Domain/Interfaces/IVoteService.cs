@@ -9,6 +9,6 @@ namespace VoteSystem.Domain.Interfaces
     public interface IVoteService
     {
         public Vote Vote(int userId, int Idchoice);
-        public bool CheckVote(int userId, string pollName);
+        public bool CheckIfVoted(int userId, string pollName);
     }
 }
