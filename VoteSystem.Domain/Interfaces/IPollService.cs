@@ -11,6 +11,6 @@ namespace VoteSystem.Domain.Interfaces
         List<int> GetAllAvailablePollIds(int userId);
         void CreatePoll(PollCreationDTO creationDTO);
         Choice CreateChoice(ChoiceCreationDTO choiceCreation);
-        Dictionary<bool, string> CheckAllPolicy(string temp_name, int userId);
+        Dictionary<bool, string> CheckAllPolicy(string temp_name);
     }
 }
