@@ -40,9 +40,5 @@ namespace VoteSystem.Domain.DefaultImplementations
             _voteRepos.Create(vote);
             return vote;
         }
-        public bool CheckIfVoted(int userId, string pollName)
-        {
-            return _voteRepos.IsVoted(userId, pollName);
-        }
     }
 }

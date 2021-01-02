@@ -8,6 +8,7 @@ using VoteSystem.Data.Entities.UserPolicyAggregate;
 using VoteSystem.Data.Entities.PollAggregate;
 using System.Collections.Generic;
 using System.Linq;
+using VoteSystem.Data.DTO;
 
 namespace VoteSystem.Cosnole
 {
@@ -29,16 +30,19 @@ namespace VoteSystem.Cosnole
             kernel.Bind<IRegistrationUserService>().To<RegistrationUserService>();
             kernel.Bind<IVoteService>().To<VoteService>();
 
+             
             ContextRegistration contextRegistration = new ContextRegistration();
             UserRepository userRepository = new UserRepository();
+            var managePolicy = new ManagePolicy(userRepository);
             VoteRepository voteRepository = new VoteRepository();
             RegionRepository regionRepository = new RegionRepository();
             PollRepository pollRepository = new PollRepository();
-            UserService userService = new UserService(userRepository);
-            PollService pollService = new PollService(userRepository, regionRepository, pollRepository);
-            PolicyChecker policyChecker = new PolicyChecker(userService);
+            PolicyChecker policyChecker = new PolicyChecker(userRepository);
             VoteService voteService = new VoteService(voteRepository, pollRepository);
-            var managePolicy = new ManagePolicy(userRepository);
+            PollService pollService = new PollService(userRepository, regionRepository, 
+                                                      pollRepository, managePolicy, 
+                                                      voteService, policyChecker, voteRepository);
+            UserInterface userInterface = new UserInterface(userRepository, contextRegistration, pollRepository, policyChecker);
             IRegistrationUserService registrationUserService = new RegistrationUserService(contextRegistration,
                                                                                            voteRepository,
                                                                                            regionRepository,
@@ -57,7 +61,7 @@ namespace VoteSystem.Cosnole
                 bool response;
                 try
                 {
-                    response = registrationUserService.ValidateUser(contextRegistration.GetPassportInfo().Item1,
+                    response = userRepository.UserExists(contextRegistration.GetPassportInfo().Item1,
                                               contextRegistration.GetPassportInfo().Item2);
                 }
                 catch (Exception)
@@ -74,7 +78,7 @@ namespace VoteSystem.Cosnole
                 {
                     bool choice = true;
 
-                    int user_temp_id = userService.GetUserByMainInfo(contextRegistration.GetPassportInfo().Item1, contextRegistration.GetPassportInfo().Item2).Id;
+                    int user_temp_id = userRepository.GetUser(contextRegistration.GetPassportInfo().Item1, contextRegistration.GetPassportInfo().Item2).Id;
                     while (choice) { 
                     Console.Clear();
                     Console.WriteLine("Welcome to our service!");
@@ -90,82 +94,43 @@ namespace VoteSystem.Cosnole
                         {
                             #region Create Poll
                             case 1:
-                                Console.WriteLine("Create your poll:\n Enter name: ");
-                                string name = Console.ReadLine();
-                                Console.WriteLine("Description:");
-                                string desc = Console.ReadLine();
-                                int ownerpollId = userRepository.GetUser(contextRegistration.GetPassportInfo().Item1,
-                                                       contextRegistration.GetPassportInfo().Item2).Id;
-                                Console.WriteLine("Enter Date of poll start (dd/MM/YYYY): ");
-                                var start = Convert.ToDateTime(Console.ReadLine());
-                                Console.WriteLine("Enter Date of poll end (dd/MM/YYYY): ");
-                                var end = Convert.ToDateTime(Console.ReadLine());
-                                Console.WriteLine("Allow multiple selection? (Y/N)");
-                                bool multiple;
-                                string temp_ans = Console.ReadKey().ToString();
-                                Console.ReadLine();
-                                if (temp_ans == "Y")
-                                    multiple = true;
-                                else
-                                    multiple = false;
-                                int creation_response = pollService.CreatePoll(name, desc, ownerpollId, start, end, multiple);
-                                managePolicy.GiveAdminPolicyToUser(ownerpollId, creation_response);
+                                PollCreationDTO pollCreation = userInterface.CreatePollConsole();
+                                pollService.CreatePoll(pollCreation);
                                 break;
                             #endregion
-
                             #region AddChoice
                             case 2:
-                                Console.WriteLine("Enter PollName to add an option:");
-                                string pollName1 = Console.ReadLine();
-                                Poll poll1 = pollService.GetPoll(pollName1);
-                                bool policyresponse1 = policyChecker.CheckAdminPolicy(user_temp_id, poll1.Id);
-                                if (policyresponse1 == false)
+                                ChoiceCreationDTO choiceCreation = userInterface.CreateChoiceConsole(user_temp_id);
+                                if (choiceCreation == null) 
                                 {
-                                    Console.WriteLine("You have no rights to create options for this poll!");
-                                    Console.ReadLine();
                                     break;
                                 }
-                                Console.WriteLine("Enter Option Name: ");
-                                string optionName = Console.ReadLine();
-                                Console.WriteLine("Enter option description: ");
-                                string descr = Console.ReadLine();
-                                pollService.CreateChoice(optionName, descr, poll1.Id);
+                                pollService.CreateChoice(choiceCreation);
                                 break;
 
                             #endregion
-
                             #region Vote
                             case 3:
-                                Console.WriteLine("Available polls: ");
-                                foreach (var a in pollService.ShowAllPolls())
-                                {
-                                    Console.WriteLine($"{a.Name} \n {a.Description}\n Time left: {a.PollEndDate - DateTime.Now} \n");
-                                }
+                                userInterface.ShowPollsConsole();
                                 Console.WriteLine("Choose the poll:");
-                                string poll_temp_name = Console.ReadLine(); 
-                                Poll poll2 = pollService.GetPoll(poll_temp_name);
-                                bool policyresponse2 = policyChecker.CheckPolicy(user_temp_id, poll2.Id);
-                                bool multiplevoteresponse = voteService.CheckIfVoted(user_temp_id, poll_temp_name);
-
-                                if (multiplevoteresponse == true)
+                                string poll_temp_name = Console.ReadLine();
+                                Poll poll1 = pollRepository.Get(poll_temp_name);
+                                if (pollService.CheckAllPolicy(poll_temp_name, user_temp_id).Count > 0)
                                 {
-                                    Console.WriteLine("You have already voted");
-                                    Console.ReadLine();
+                                    foreach (var a in pollService.CheckAllPolicy(poll_temp_name, user_temp_id))
+                                    {
+                                        Console.WriteLine(a.Value);
+                                        Console.ReadLine();
+                                    }
                                     break;
                                 }
-                                if (policyresponse2 == false)
-                                {
-                                    Console.WriteLine("Sorry, but you cannot vote!");
-                                    Console.ReadLine();
-                                    break;
-                                }
-                                foreach (var a in pollService.GetChoices(poll_temp_name))
+                                foreach (var a in pollRepository.GetChoices(poll_temp_name))
                                 {
                                     Console.WriteLine($"{a.Name} \n {a.Description} \n");
                                 }
                                 Console.WriteLine("Write what you choose:");
                                 List<string> allChoices = new List<string>();
-                                if (poll2.MutlipleSelection == true)
+                                if (poll1.MutlipleSelection == true)
                                 {
                                     string option = Console.ReadLine();
                                     allChoices.Add(option);
@@ -186,15 +151,15 @@ namespace VoteSystem.Cosnole
                                 }
                                 foreach (var a in allChoices)
                                 {
-                                    voteService.Vote(user_temp_id, pollService.GetChoices(poll_temp_name).FirstOrDefault(c => c.Name == a).Id);                                }
+                                    voteService.Vote(user_temp_id, pollRepository.GetChoices(poll_temp_name).FirstOrDefault(c => c.Name == a).Id);                                }
                                 break;
                             #endregion
                             #region Policy
                             case 4:
-                                
+                                userInterface.ShowPollsConsole();
                                 Console.WriteLine("Enter PollName for future policy:");
                                 string pollName = Console.ReadLine();
-                                Poll poll = pollService.GetPoll(pollName);
+                                Poll poll = pollRepository.Get(pollName);
                                 bool policyresponse = policyChecker.CheckAdminPolicy(user_temp_id, poll.Id);
                                 if (policyresponse == false)
                                 {
@@ -208,14 +173,14 @@ namespace VoteSystem.Cosnole
                                 {
                                     Console.WriteLine("Enter email for user who you want to give policy:");
                                     string email = Console.ReadLine();
-                                    User user = userService.GetUserByEmail(email);
+                                    User user = userRepository.GetUser(email);
                                     managePolicy.GiveAdminPolicyToUser(user.Id, poll.Id);
                                 }
                                 else if (answer_for_rights == "Access")
                                 {
                                     Console.WriteLine("Enter email for user who you want to give policy:");
                                     string email = Console.ReadLine();
-                                    User user = userService.GetUserByEmail(email);
+                                    User user = userRepository.GetUser(email);
                                     managePolicy.GivePolicyToUser(user.Id, poll.Id);
                                 }
                                 else
@@ -226,11 +191,7 @@ namespace VoteSystem.Cosnole
                             #endregion
                             #region Results
                             case 5:
-                                Console.WriteLine("Available polls: ");
-                                foreach (var a in pollService.ShowAllPolls())
-                                {
-                                    Console.WriteLine($"{a.Name} \n {a.Description}\n Time left: {a.PollEndDate - DateTime.Now} \n");
-                                }
+                                userInterface.ShowPollsConsole();
                                 Console.WriteLine("Enter Pollname to see the results:");
                                 string pollResultName = Console.ReadLine();
                                 foreach (var a in voteService.GetPollResult(pollResultName))

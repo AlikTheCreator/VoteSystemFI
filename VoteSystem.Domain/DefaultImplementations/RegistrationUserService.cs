@@ -32,9 +32,5 @@ namespace VoteSystem.Domain.DefaultImplementations
             _userRepos.CreateUser(user);
             return true;
         }
-        public bool ValidateUser(string PaspCode, int IndefCode)
-        {
-            return _userRepos.UserExists(PaspCode, IndefCode);
-        }
     }
 }
