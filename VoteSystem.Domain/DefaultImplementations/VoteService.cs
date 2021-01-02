@@ -13,30 +13,44 @@ namespace VoteSystem.Domain.DefaultImplementations
     {
         IVoteRepository _voteRepos;
         IPollRepository _pollRepos;
-        public VoteService(IVoteRepository voteRepository, IPollRepository pollRepository)
+        IContextRegistration _contextRegistration;
+        public VoteService(
+            IVoteRepository voteRepository, 
+            IPollRepository pollRepository,
+            IContextRegistration contextRegistration
+        )
         {
             _pollRepos = pollRepository;
             _voteRepos = voteRepository;
+            _contextRegistration = contextRegistration;
         }
         public Dictionary<string, int> GetPollResult(string pollName)
         {
             int pollId = _pollRepos.Get(pollName).Id;
             return _voteRepos.GetResultInPoll(pollId);
         }
-        public Vote Vote(int userId, int Idchoice)
+        public Vote Vote(int Idchoice)
         {
-            var votechoice = new VoteChoice()
-            {
-                choiceId = Idchoice
-            };
+            return Vote(new List<int>() { Idchoice });
+        }
+
+        public Vote Vote(List<int> Idchoices)
+        {
             var vote = new Vote()
             {
-                UserId = userId,
+                UserId = _contextRegistration.GetLoggedUser().Id,
                 VoteDate = DateTime.Now,
                 VoteChoices = new List<VoteChoice>()
             };
 
-            vote.VoteChoices.Add(votechoice);
+            foreach (var choiceId in Idchoices)
+            {
+                vote.VoteChoices.Add(new VoteChoice()
+                {
+                    choiceId = choiceId
+                });
+            }
+
             _voteRepos.Create(vote);
             return vote;
         }

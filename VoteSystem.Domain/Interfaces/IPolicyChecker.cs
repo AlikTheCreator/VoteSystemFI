@@ -6,7 +6,7 @@ namespace VoteSystem.Domain.Interfaces
 {
     public interface IPolicyChecker
     {
-        bool CheckPolicy(int userId, int pollId);
-        bool CheckAdminPolicy(int userId, int pollId);
+        bool CheckPolicy(int pollId);
+        bool CheckAdminPolicy(int pollId);
     }
 }

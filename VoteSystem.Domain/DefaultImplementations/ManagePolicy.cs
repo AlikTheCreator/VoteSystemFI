@@ -47,5 +47,16 @@ namespace VoteSystem.Domain.DefaultImplementations
             _userRepos.CreateUserPolicy(userPolicy1);
             return true;
         }
+
+        public bool GivePolicyToUser(int userId, int pollId, PolicyType type)
+        {
+            if (type == PolicyType.Access) {
+                return GivePolicyToUser(userId, pollId);
+            }
+            if (type == PolicyType.Administration) {
+                return GiveAdminPolicyToUser(userId, pollId);
+            }
+            return false;
+        }
     }
 }
