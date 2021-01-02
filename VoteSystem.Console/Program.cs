@@ -9,6 +9,7 @@ using VoteSystem.Data.Entities.PollAggregate;
 using System.Collections.Generic;
 using System.Linq;
 using VoteSystem.Data.DTO;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace VoteSystem.Cosnole
 {
@@ -16,6 +17,9 @@ namespace VoteSystem.Cosnole
     {
         static void Main(string[] args)
         {
+            var collection = new ServiceCollection();
+            collection.AddScoped<IPollRepository, PollRepository>();
+
             IKernel kernel = new StandardKernel();
             
             #region BindingOnly
