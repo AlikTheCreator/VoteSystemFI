@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using VoteSystem.Data.Entities.PollAggregate;
 using VoteSystem.Data.Repositories;
+using System.Data.Entity;
 
 namespace VoteSystem.EF.Repositories
 {
@@ -45,9 +46,18 @@ namespace VoteSystem.EF.Repositories
         {
             using (var ctx = new VoteContext())
             {
-                return ctx.Polls.FirstOrDefault(p => p.Name == pollName);
+                return ctx.Polls.Include(x => x.Choices).FirstOrDefault(p => p.Name == pollName);
             }
         }
+        // this is because you might want to get an ID without the whole aggregate - do it
+        public int? GetPollId(string pollName) {
+
+            using (var ctx = new VoteContext())
+            {
+                return ctx.Polls.FirstOrDefault(p => p.Name == pollName)?.Id;
+            }
+        }
+        // garbage - to be deleted
         public List<Choice> GetChoices(int pollId)
         {
             using (var ctx = new VoteContext())
@@ -58,22 +68,14 @@ namespace VoteSystem.EF.Repositories
                 return choices;
             }
         }
-        public List<Choice> GetChoices(string pollName)
-        {
-            using (var ctx = new VoteContext())
-            {
-                List<Choice> choices = ctx.Choices.Where(c => c.Poll.Name == pollName).ToList();
-                if (choices == null)
-                    choices = new List<Choice>();
-                return choices;
-            }
-        }
 
+        // garbage - to be deleted
         public Choice GetChoice(int choiceId)
         {
             using (var ctx = new VoteContext())
                 return ctx.Choices.FirstOrDefault(c => c.Id == choiceId);
         }
+        // garbage - to be deleted. If you wan't to format poll to some UI friendly representation - do it in UI layuer
         public string[] GetPollDetails(int id)
         {
             using (var ctx = new VoteContext())

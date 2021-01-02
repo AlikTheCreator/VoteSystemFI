@@ -45,13 +45,13 @@ namespace VoteSystem.Cosnole
                 pollCreation.MultipleSelection = false;
             return pollCreation;
         }
-        public ChoiceCreationDTO CreateChoiceConsole(int userId)
+        public ChoiceCreationDTO CreateChoiceConsole()
         {
             ChoiceCreationDTO choiceCreation = new ChoiceCreationDTO();
             Console.WriteLine("Enter PollName to add an option:");
             string pollName1 = Console.ReadLine();
             Poll poll = _pollRepos.Get(pollName1);
-            bool policyresponse = _policyChecker.CheckAdminPolicy(userId, poll.Id);
+            bool policyresponse = _policyChecker.CheckAdminPolicy(poll.Id);
             if (policyresponse == false)
             {
                 Console.WriteLine("You have no rights to create options for this poll!");

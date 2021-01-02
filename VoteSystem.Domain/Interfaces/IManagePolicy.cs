@@ -9,5 +9,6 @@ namespace VoteSystem.Domain.Interfaces
     {
         bool GivePolicyToUser(int userId, int pollId);
         bool GiveAdminPolicyToUser(int userId, int pollId);
+        bool GivePolicyToUser(int userId, int pollId, PolicyType type); 
     }
 }

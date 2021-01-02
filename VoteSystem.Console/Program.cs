@@ -35,15 +35,15 @@ namespace VoteSystem.Cosnole
             kernel.Bind<IVoteService>().To<VoteService>();
 
              
-            ContextRegistration contextRegistration = new ContextRegistration();
             UserRepository userRepository = new UserRepository();
+            ContextRegistration contextRegistration = new ContextRegistration(userRepository);
             var managePolicy = new ManagePolicy(userRepository);
             VoteRepository voteRepository = new VoteRepository();
             RegionRepository regionRepository = new RegionRepository();
             PollRepository pollRepository = new PollRepository();
-            PolicyChecker policyChecker = new PolicyChecker(userRepository);
-            VoteService voteService = new VoteService(voteRepository, pollRepository);
-            PollService pollService = new PollService(userRepository, regionRepository, 
+            PolicyChecker policyChecker = new PolicyChecker(userRepository, contextRegistration);
+            VoteService voteService = new VoteService(voteRepository, pollRepository, contextRegistration);
+            PollService pollService = new PollService(contextRegistration, regionRepository, 
                                                       pollRepository, managePolicy, 
                                                       voteService, policyChecker, voteRepository);
             UserInterface userInterface = new UserInterface(userRepository, contextRegistration, pollRepository, policyChecker);
@@ -104,7 +104,7 @@ namespace VoteSystem.Cosnole
                             #endregion
                             #region AddChoice
                             case 2:
-                                ChoiceCreationDTO choiceCreation = userInterface.CreateChoiceConsole(user_temp_id);
+                                ChoiceCreationDTO choiceCreation = userInterface.CreateChoiceConsole();
                                 if (choiceCreation == null) 
                                 {
                                     break;
@@ -118,32 +118,34 @@ namespace VoteSystem.Cosnole
                                 userInterface.ShowPollsConsole();
                                 Console.WriteLine("Choose the poll:");
                                 string poll_temp_name = Console.ReadLine();
-                                Poll poll1 = pollRepository.Get(poll_temp_name);
-                                if (pollService.CheckAllPolicy(poll_temp_name, user_temp_id).Count > 0)
+                                var pollPolicyFailedChecks = pollService.CheckAllPolicy(poll_temp_name);
+                                if (pollPolicyFailedChecks.Count > 0)
                                 {
-                                    foreach (var a in pollService.CheckAllPolicy(poll_temp_name, user_temp_id))
+                                    foreach (var a in pollPolicyFailedChecks)
                                     {
                                         Console.WriteLine(a.Value);
                                         Console.ReadLine();
                                     }
                                     break;
                                 }
-                                foreach (var a in pollRepository.GetChoices(poll_temp_name))
+
+                                Poll poll1 = pollRepository.Get(poll_temp_name);
+                                foreach (var a in poll1.Choices)
                                 {
                                     Console.WriteLine($"{a.Name} \n {a.Description} \n");
                                 }
                                 Console.WriteLine("Write what you choose:");
-                                List<string> allChoices = new List<string>();
+                                List<int> allChoices = new List<int>();
                                 if (poll1.MutlipleSelection == true)
                                 {
                                     string option = Console.ReadLine();
-                                    allChoices.Add(option);
+                                    allChoices.Add(poll1.GetChoiceByName(option).Id);
                                     Console.WriteLine("Do you want to choose smth more? (Y/N)");
                                     string multipleResponse = Console.ReadLine();
                                     while (multipleResponse == "Y")
                                     {
                                         option = Console.ReadLine();
-                                        allChoices.Add(option);
+                                        allChoices.Add(poll1.GetChoiceByName(option).Id);
                                         Console.WriteLine("Do you want to choose smth more? (Y/N)");
                                         multipleResponse = Console.ReadLine();
                                     }
@@ -151,11 +153,10 @@ namespace VoteSystem.Cosnole
                                 else
                                 {
                                     string option = Console.ReadLine();
-                                    allChoices.Add(option);
+                                    allChoices.Add(poll1.GetChoiceByName(option).Id);
                                 }
-                                foreach (var a in allChoices)
-                                {
-                                    voteService.Vote(user_temp_id, pollRepository.GetChoices(poll_temp_name).FirstOrDefault(c => c.Name == a).Id);                                }
+
+                                voteService.Vote(allChoices);
                                 break;
                             #endregion
                             #region Policy
@@ -163,8 +164,17 @@ namespace VoteSystem.Cosnole
                                 userInterface.ShowPollsConsole();
                                 Console.WriteLine("Enter PollName for future policy:");
                                 string pollName = Console.ReadLine();
-                                Poll poll = pollRepository.Get(pollName);
-                                bool policyresponse = policyChecker.CheckAdminPolicy(user_temp_id, poll.Id);
+
+                                int? pollId = pollRepository.GetPollId(pollName);
+
+                                if (pollId == null) {
+                                    Console.WriteLine("Invalid poll name");
+                                    Console.ReadLine();
+                                    break;
+                                }
+
+                                bool policyresponse = policyChecker.CheckAdminPolicy(pollId.Value);
+
                                 if (policyresponse == false)
                                 {
                                     Console.WriteLine("You have no rights to give policy for this poll!");
@@ -173,24 +183,16 @@ namespace VoteSystem.Cosnole
                                 }
                                 Console.WriteLine("Which rights do you want to give? (Admin/Access)");
                                 string answer_for_rights = Console.ReadLine();
-                                if (answer_for_rights == "Admin")
-                                {
-                                    Console.WriteLine("Enter email for user who you want to give policy:");
-                                    string email = Console.ReadLine();
-                                    User user = userRepository.GetUser(email);
-                                    managePolicy.GiveAdminPolicyToUser(user.Id, poll.Id);
-                                }
-                                else if (answer_for_rights == "Access")
-                                {
-                                    Console.WriteLine("Enter email for user who you want to give policy:");
-                                    string email = Console.ReadLine();
-                                    User user = userRepository.GetUser(email);
-                                    managePolicy.GivePolicyToUser(user.Id, poll.Id);
-                                }
-                                else
-                                {
+                                if(!Enum.TryParse(answer_for_rights, out PolicyType policyType)) {
                                     Console.WriteLine("Fuck you dumbass paralytic idiot who cannot type needed shit!");
+                                    break;
                                 }
+
+                                Console.WriteLine("Enter email for user who you want to give policy:");
+                                string email = Console.ReadLine();
+
+                                User user = userRepository.GetUser(email);
+                                managePolicy.GivePolicyToUser(user.Id, pollId.Value, policyType);                                
                                 break;
                             #endregion
                             #region Results

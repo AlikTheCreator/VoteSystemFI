@@ -18,17 +18,18 @@ namespace VoteSystem.Domain.DefaultImplementations
         IVoteService _voteService;
         IPolicyChecker _policyChecker;
         IVoteRepository _voteRepos;
-        public PollService(IUserRepository userRepository, IRegionRepository regionRepository, 
+        IContextRegistration _contextRegistration;
+        public PollService(IContextRegistration contextRegistration, IRegionRepository regionRepository, 
                            IPollRepository pollRepository, IManagePolicy managePolicy,
                            IVoteService voteService, IPolicyChecker policyChecker, IVoteRepository voteRepository)
         {
             _voteRepos = voteRepository;
             _managePolicy = managePolicy;
-            _userRepos = userRepository;
             _regionRepos = regionRepository;
             _pollRepos = pollRepository;
             _voteService = voteService;
             _policyChecker = policyChecker;
+            _contextRegistration = contextRegistration;
         }
 
         public Choice CreateChoice(ChoiceCreationDTO choiceCreation)
@@ -69,18 +70,18 @@ namespace VoteSystem.Domain.DefaultImplementations
         }
 
 
-        public Dictionary<bool, string> CheckAllPolicy(string temp_name, int userId)
+        public Dictionary<bool, string> CheckAllPolicy(string temp_name)
         {
             Dictionary<bool, string> allResponses = new Dictionary<bool, string>();
             Poll poll = _pollRepos.Get(temp_name);
-            bool policyresponse = _policyChecker.CheckPolicy(userId, poll.Id);
+            bool policyresponse = _policyChecker.CheckPolicy(poll.Id);
             if (!policyresponse)
             {
                 string policyAnswer = "You are not allowed to vote!";
                 allResponses.Add(policyresponse, policyAnswer);
                 return allResponses;
             }
-            bool multiplevoteresponse = _voteRepos.IsVoted(userId, temp_name);
+            bool multiplevoteresponse = _voteRepos.IsVoted(_contextRegistration.GetLoggedUser().Id, temp_name);
             if (multiplevoteresponse)
             {
                 string voteAnswer = "You have already voted!";

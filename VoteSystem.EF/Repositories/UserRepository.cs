@@ -4,6 +4,7 @@ using System.Text;
 using VoteSystem.Data.Repositories;
 using VoteSystem.Data.Entities.UserPolicyAggregate;
 using System.Linq;
+using System.Data.Entity;
 
 namespace VoteSystem.EF.Repositories
 {
@@ -82,7 +83,7 @@ namespace VoteSystem.EF.Repositories
         {
             using (VoteContext voteContext = new VoteContext())
             {
-                return voteContext.Users.
+                return voteContext.Users.Include(x => x.UserPolicies).
                     FirstOrDefault(p => (p.PassportCode == PaspCode) && (p.IdentificationCode == IndefCode));
             }
         }

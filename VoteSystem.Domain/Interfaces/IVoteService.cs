@@ -8,6 +8,7 @@ namespace VoteSystem.Domain.Interfaces
 {
     public interface IVoteService
     {
-        public Vote Vote(int userId, int Idchoice);
+        public Vote Vote(List<int> Idchoices);
+        public Vote Vote(int Idchoice);
     }
 }
