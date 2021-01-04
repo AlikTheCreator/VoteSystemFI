@@ -7,14 +7,14 @@ using VoteSystem.Domain.Interfaces;
 
 namespace VoteSystem.Cosnole
 {
-    class ContextRegistration : IContextRegistration
+    public class AuthorizationContext : IAuthorizationContext
     {
         private string _passportCode;
         private int _indefCode;
         private IUserRepository _userRepository;
         private User _loggedInUser;
 
-        public ContextRegistration(IUserRepository userRepository) {
+        public AuthorizationContext(IUserRepository userRepository) {
             _userRepository = userRepository;
         }
 

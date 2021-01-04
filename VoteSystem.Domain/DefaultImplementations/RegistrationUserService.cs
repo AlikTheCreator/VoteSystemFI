@@ -11,8 +11,8 @@ namespace VoteSystem.Domain.DefaultImplementations
         IVoteRepository _voteRepos;
         IRegionRepository _regionRepos;
         IUserRepository _userRepos;
-        IContextRegistration _contextRegistration;
-        public RegistrationUserService(IContextRegistration contextRegistration,  IVoteRepository voteRepository, IRegionRepository regionRepository, IUserRepository userRepository)
+        IAuthorizationContext _contextRegistration;
+        public RegistrationUserService(IAuthorizationContext contextRegistration,  IVoteRepository voteRepository, IRegionRepository regionRepository, IUserRepository userRepository)
         {
             _voteRepos = voteRepository;
             _regionRepos = regionRepository;

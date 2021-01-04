@@ -4,6 +4,7 @@ using System.Text;
 using VoteSystem.Data.Repositories;
 using VoteSystem.Data.Entities.VoteAggregate;
 using System.Linq;
+using System.Data.Entity;
 
 namespace VoteSystem.EF.Repositories
 {
@@ -50,11 +51,6 @@ namespace VoteSystem.EF.Repositories
 
             }
         }
-        //public List<Vote> GetAllForUser(int userId)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
         public List<Vote> GetAllForUser(int userId)
         {
             using (var ctx = new VoteContext())
@@ -89,7 +85,7 @@ namespace VoteSystem.EF.Repositories
         {
             using (var ctx = new VoteContext())
             {
-                Vote vote = ctx.Votes.FirstOrDefault(vote => vote.Id == voteId);
+                Vote vote = ctx.Votes.Include(vote => vote.VoteChoices).FirstOrDefault(vote => vote.Id == voteId);
                 if (vote == null)
                     return null;
                 return vote;
@@ -100,15 +96,6 @@ namespace VoteSystem.EF.Repositories
         {
             throw new NotImplementedException();
         }
-        //        public void Update(Vote vote)
-        //        {
-        //            using (var ctx = new VoteContext())
-        //            {
-        //               ctx.Votes.FirstOrDefault(vote => vote.Id == vote.Id).voteStart = vote.voteStart;
-        //                ctx.Votes.FirstOrDefault(vote => vote.Id == vote.Id).voteEnd = vote.voteEnd;
-        //                ctx.Votes.FirstOrDefault(vote => vote.Id == vote.Id).choiceId = vote.choiceId;
-        //            }
-        //        }
 
         public bool ExistingUser(int userId)
         {

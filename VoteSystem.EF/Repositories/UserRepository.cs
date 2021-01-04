@@ -32,10 +32,15 @@ namespace VoteSystem.EF.Repositories
         {
             using (VoteContext voteContext = new VoteContext())
             {
-                if (voteContext.Users.FirstOrDefault(u => u.PassportCode == paspCode).IdentificationCode == IndefCode)
+                if (voteContext.Users.FirstOrDefault(u => u.PassportCode == paspCode) != null)
                 {
-                    return true;
+                    if (voteContext.Users.FirstOrDefault(u => u.PassportCode == paspCode).IdentificationCode == IndefCode)
+                    {
+                        return true;
+                    }
                 }
+                else
+                return false;
                 return false;
             }
         }
@@ -91,8 +96,7 @@ namespace VoteSystem.EF.Repositories
         {
             using (VoteContext voteContext = new VoteContext())
             {
-                return voteContext.Users.
-                    FirstOrDefault(p => p.Id == Id);
+                return voteContext.Users.Include(x => x.UserPolicies).FirstOrDefault(p => p.Id == Id);
             }
         }
         public int GetUserId(string name)
@@ -115,7 +119,7 @@ namespace VoteSystem.EF.Repositories
         {
             using (VoteContext voteContext = new VoteContext())
             {
-                return voteContext.Users.FirstOrDefault(u => u.Email == email);
+                return voteContext.Users.Include(x => x.UserPolicies).FirstOrDefault(u => u.Email == email);
             }
         }
 

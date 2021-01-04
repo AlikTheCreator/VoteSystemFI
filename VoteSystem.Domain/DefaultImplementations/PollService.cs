@@ -18,8 +18,8 @@ namespace VoteSystem.Domain.DefaultImplementations
         IVoteService _voteService;
         IPolicyChecker _policyChecker;
         IVoteRepository _voteRepos;
-        IContextRegistration _contextRegistration;
-        public PollService(IContextRegistration contextRegistration, IRegionRepository regionRepository, 
+        IAuthorizationContext _contextRegistration;
+        public PollService(IAuthorizationContext contextRegistration, IRegionRepository regionRepository, 
                            IPollRepository pollRepository, IManagePolicy managePolicy,
                            IVoteService voteService, IPolicyChecker policyChecker, IVoteRepository voteRepository)
         {
@@ -40,7 +40,7 @@ namespace VoteSystem.Domain.DefaultImplementations
                 Description = choiceCreation.OptionDescription,
                 Poll = _pollRepos.Get(_pollRepos.GetPolls().FirstOrDefault(p => p.Id == choiceCreation.pollId).Name)
             };
-            _pollRepos.GetChoices(choiceCreation.pollId).Add(choice);
+            _pollRepos.Get(choiceCreation.pollId).Choices.Add(choice);
             _pollRepos.CreateChoice(choice, choiceCreation.pollId);
             return choice;
         }
@@ -60,16 +60,6 @@ namespace VoteSystem.Domain.DefaultImplementations
             _pollRepos.Create(poll);
             _managePolicy.GiveAdminPolicyToUser(pollCreation.OwnerId, poll.Id);
         }
-
-        public List<int> GetAllAvailablePollIds(int userId)
-        {
-            List<int> allpolicies = new List<int>();
-            allpolicies.AddRange(_userRepos.GetAllUserPollIdsWithPolicies(userId));
-            allpolicies.AddRange(_regionRepos.GetAllPollIdsForRegionPolicies(_userRepos.GetRegionId(userId)));
-            return allpolicies;
-        }
-
-
         public Dictionary<bool, string> CheckAllPolicy(string temp_name)
         {
             Dictionary<bool, string> allResponses = new Dictionary<bool, string>();

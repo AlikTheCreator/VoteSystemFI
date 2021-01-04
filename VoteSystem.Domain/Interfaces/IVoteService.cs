@@ -10,5 +10,6 @@ namespace VoteSystem.Domain.Interfaces
     {
         public Vote Vote(List<int> Idchoices);
         public Vote Vote(int Idchoice);
+        public Dictionary<string, int> GetPollResult(string pollName);
     }
 }

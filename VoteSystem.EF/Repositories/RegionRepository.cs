@@ -4,6 +4,7 @@ using System.Text;
 using VoteSystem.Data.Repositories;
 using VoteSystem.Data.Entities.RegionPolicyAggregate;
 using System.Linq;
+using System.Data.Entity;
 
 namespace VoteSystem.EF.Repositories
 {
@@ -31,14 +32,14 @@ namespace VoteSystem.EF.Repositories
         {
             using (var ctx = new VoteContext())
             {
-                return ctx.Regions.FirstOrDefault(p => p.Id == id);
+                return ctx.Regions.Include(r => r.RegionPolicies).FirstOrDefault(r => r.Id == id);
             }
         }
         public int GetRegiondIdByName(string name)
         {
             using (VoteContext voteContext = new VoteContext())
             {
-                return voteContext.Regions.FirstOrDefault(r => r.Name == name).Id;
+                return voteContext.Regions.Include(r => r.RegionPolicies).FirstOrDefault(r => r.Name == name).Id;
             }
         }
 

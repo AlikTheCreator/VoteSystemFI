@@ -12,16 +12,19 @@ namespace VoteSystem.Cosnole
     public class UserInterface
     {
         IUserRepository _userRepository;
-        IContextRegistration _contextRegistration;
+        IAuthorizationContext _authorizationContext;
         IPollRepository _pollRepos;
         IPolicyChecker _policyChecker;
-        public UserInterface(IUserRepository userRepository, IContextRegistration contextRegistration, 
-                             IPollRepository pollRepository, IPolicyChecker policyChecker)
+        IPollService _pollService;
+        public UserInterface(IUserRepository userRepository, IAuthorizationContext authorizationContext, 
+                             IPollRepository pollRepository, IPolicyChecker policyChecker,
+                             IPollService pollService)
         {
             _userRepository = userRepository;
-            _contextRegistration = contextRegistration;
+            _authorizationContext = authorizationContext;
             _pollRepos = pollRepository;
             _policyChecker = policyChecker;
+            _pollService = pollService;
         }
         public PollCreationDTO CreatePollConsole()
         {
@@ -30,14 +33,13 @@ namespace VoteSystem.Cosnole
             pollCreation.Name = Console.ReadLine();
             Console.WriteLine("Description:");
             pollCreation.Description = Console.ReadLine();
-            pollCreation.OwnerId = _userRepository.GetUser(_contextRegistration.GetPassportInfo().Item1,
-                                   _contextRegistration.GetPassportInfo().Item2).Id;
+            pollCreation.OwnerId = _authorizationContext.GetLoggedUser().Id;
             Console.WriteLine("Enter Date of poll start (dd/MM/YYYY): ");
             pollCreation.LeftDateTime = Convert.ToDateTime(Console.ReadLine());
             Console.WriteLine("Enter Date of poll end (dd/MM/YYYY): ");
             pollCreation.RightDateTime = Convert.ToDateTime(Console.ReadLine());
             Console.WriteLine("Allow multiple selection? (Y/N)");
-            string temp_ans = Console.ReadKey().ToString();
+            string temp_ans = Console.ReadLine();
             Console.ReadLine();
             if (temp_ans == "Y")
                 pollCreation.MultipleSelection = true;
@@ -72,6 +74,20 @@ namespace VoteSystem.Cosnole
             {
                 Console.WriteLine($"{a.Name} \n {a.Description}\n Time left: {a.PollEndDate - DateTime.Now} \n");
             }
+        }
+        public bool PolicyCheckConsole(string poll_temp_name)
+        {
+            var pollPolicyFailedChecks = _pollService.CheckAllPolicy(poll_temp_name);
+            if (pollPolicyFailedChecks.Count > 0)
+            {
+                foreach (var a in pollPolicyFailedChecks)
+                {
+                    Console.WriteLine(a.Value);
+                    Console.ReadLine();
+                }
+                return false;
+            }
+            return true;
         }
     }
 }

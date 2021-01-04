@@ -6,7 +6,7 @@ using VoteSystem.Data.Entities.UserPolicyAggregate;
 
 namespace VoteSystem.Domain.Interfaces
 {
-    public interface IContextRegistration
+    public interface IAuthorizationContext
     {
         bool SetPasswordInfo(string passportCode, int indefCode);
         Tuple<string, int> GetPassportInfo();

@@ -8,7 +8,6 @@ namespace VoteSystem.Domain.Interfaces
 {
     public interface IPollService
     {
-        List<int> GetAllAvailablePollIds(int userId);
         void CreatePoll(PollCreationDTO creationDTO);
         Choice CreateChoice(ChoiceCreationDTO choiceCreation);
         Dictionary<bool, string> CheckAllPolicy(string temp_name);

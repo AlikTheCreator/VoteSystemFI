@@ -31,26 +31,27 @@ namespace VoteSystem.Cosnole
             kernel.Bind<IManagePolicy>().To<ManagePolicy>();
             kernel.Bind<IPolicyChecker>().To<PolicyChecker>();
             kernel.Bind<IPollService>().To<PollService>();
-            kernel.Bind<IRegistrationUserService>().To<RegistrationUserService>();
             kernel.Bind<IVoteService>().To<VoteService>();
+            kernel.Bind<IAuthorizationContext>().To<AuthorizationContext>().InSingletonScope();
 
              
-            UserRepository userRepository = new UserRepository();
-            ContextRegistration contextRegistration = new ContextRegistration(userRepository);
-            var managePolicy = new ManagePolicy(userRepository);
-            VoteRepository voteRepository = new VoteRepository();
-            RegionRepository regionRepository = new RegionRepository();
-            PollRepository pollRepository = new PollRepository();
-            PolicyChecker policyChecker = new PolicyChecker(userRepository, contextRegistration);
-            VoteService voteService = new VoteService(voteRepository, pollRepository, contextRegistration);
-            PollService pollService = new PollService(contextRegistration, regionRepository, 
-                                                      pollRepository, managePolicy, 
-                                                      voteService, policyChecker, voteRepository);
-            UserInterface userInterface = new UserInterface(userRepository, contextRegistration, pollRepository, policyChecker);
-            IRegistrationUserService registrationUserService = new RegistrationUserService(contextRegistration,
-                                                                                           voteRepository,
-                                                                                           regionRepository,
-                                                                                           userRepository);
+            var userRepository = kernel.Get<IUserRepository>();
+            var authorizationContext = kernel.Get<IAuthorizationContext>();
+            var managePolicy = kernel.Get<IManagePolicy>();
+            var voteRepository = kernel.Get<IVoteRepository>();
+            var regionRepository = kernel.Get<IRegionRepository>();
+            var pollRepository = kernel.Get<IPollRepository>();
+            var policyChecker = kernel.Get<IPolicyChecker>();
+            var voteService = kernel.Get<IVoteService>();
+            var pollService = kernel.Get<IPollService>();
+            //new PollService(kernel.Get<IAuthorizationContext>(), kernel.Get<IRegionRepository>(),
+            //                                      kernel.Get<IPollRepository>(), kernel.Get<IManagePolicy>(), 
+            //                                      kernel.Get<IVoteService>(), kernel.Get<IPolicyChecker>(), kernel.Get<IVoteRepository>());
+            var userInterface = new UserInterface(kernel.Get<IUserRepository>(),
+                                                            kernel.Get<IAuthorizationContext>(),
+                                                            kernel.Get<IPollRepository>(),
+                                                            kernel.Get<IPolicyChecker>(),
+                                                            kernel.Get<IPollService>());
             #endregion
             while (true)
             {
@@ -60,29 +61,21 @@ namespace VoteSystem.Cosnole
                 string passport = Console.ReadLine();
                 Console.WriteLine("Now identification code:");
                 int indefcode = Int32.Parse(Console.ReadLine());
-                contextRegistration.SetPasswordInfo(passport, indefcode);
-                //int user_temp_id = userService.GetUserByMainInfo(contextRegistration.GetPassportInfo().Item1, contextRegistration.GetPassportInfo().Item2).Id;
+                authorizationContext.SetPasswordInfo(passport, indefcode);
                 bool response;
-                try
-                {
-                    response = userRepository.UserExists(contextRegistration.GetPassportInfo().Item1,
-                                              contextRegistration.GetPassportInfo().Item2);
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("We don't have information about you");
-                    Console.ReadLine();
-                    response = false;
-                }
+                response = userRepository.UserExists(authorizationContext.GetPassportInfo().Item1,
+                                              authorizationContext.GetPassportInfo().Item2);
+                
                 if (response == false)
                 {
+                    Console.WriteLine("We don't have information about you");
                     Console.WriteLine("Sorry, but you are not allowed to vote");
+                    Console.ReadLine();
                 }
                 else
                 {
                     bool choice = true;
 
-                    int user_temp_id = userRepository.GetUser(contextRegistration.GetPassportInfo().Item1, contextRegistration.GetPassportInfo().Item2).Id;
                     while (choice) { 
                     Console.Clear();
                     Console.WriteLine("Welcome to our service!");
@@ -118,17 +111,10 @@ namespace VoteSystem.Cosnole
                                 userInterface.ShowPollsConsole();
                                 Console.WriteLine("Choose the poll:");
                                 string poll_temp_name = Console.ReadLine();
-                                var pollPolicyFailedChecks = pollService.CheckAllPolicy(poll_temp_name);
-                                if (pollPolicyFailedChecks.Count > 0)
+                                if (userInterface.PolicyCheckConsole(poll_temp_name) == false)
                                 {
-                                    foreach (var a in pollPolicyFailedChecks)
-                                    {
-                                        Console.WriteLine(a.Value);
-                                        Console.ReadLine();
-                                    }
                                     break;
                                 }
-
                                 Poll poll1 = pollRepository.Get(poll_temp_name);
                                 foreach (var a in poll1.Choices)
                                 {
@@ -184,7 +170,7 @@ namespace VoteSystem.Cosnole
                                 Console.WriteLine("Which rights do you want to give? (Admin/Access)");
                                 string answer_for_rights = Console.ReadLine();
                                 if(!Enum.TryParse(answer_for_rights, out PolicyType policyType)) {
-                                    Console.WriteLine("Fuck you dumbass paralytic idiot who cannot type needed shit!");
+                                    Console.WriteLine("Incorrect input confirmed!");
                                     break;
                                 }
 

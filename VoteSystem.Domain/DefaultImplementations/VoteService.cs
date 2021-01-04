@@ -13,11 +13,11 @@ namespace VoteSystem.Domain.DefaultImplementations
     {
         IVoteRepository _voteRepos;
         IPollRepository _pollRepos;
-        IContextRegistration _contextRegistration;
+        IAuthorizationContext _contextRegistration;
         public VoteService(
             IVoteRepository voteRepository, 
             IPollRepository pollRepository,
-            IContextRegistration contextRegistration
+            IAuthorizationContext contextRegistration
         )
         {
             _pollRepos = pollRepository;
