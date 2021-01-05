@@ -91,10 +91,5 @@ namespace VoteSystem.EF.Repositories
                 return vote;
             }
         }
-
-        public void Update(Vote vote)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
