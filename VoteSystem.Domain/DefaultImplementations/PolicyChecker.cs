@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using VoteSystem.Data.Repositories;
 using VoteSystem.Domain.Interfaces;
+using VoteSystem.Data.Entities.UserPolicyAggregate;
 
 namespace VoteSystem.Domain.DefaultImplementations
 {
@@ -17,7 +17,7 @@ namespace VoteSystem.Domain.DefaultImplementations
         }
         public bool CheckPolicy(int pollId)
         {
-            foreach (var a in _userRepos.GetAllAccessPolicies(_authorizationContext.GetLoggedUser().Id))
+            foreach (var a in _authorizationContext.GetLoggedUser().UserPolicies.Where(u => u.PolicyType == (PolicyType)0))
             {
                 if (a.PollId == pollId)
                     return true;
@@ -26,7 +26,7 @@ namespace VoteSystem.Domain.DefaultImplementations
         }
         public bool CheckAdminPolicy(int pollId)
         {
-            foreach (var a in _userRepos.GetAllAdminPolicies(_authorizationContext.GetLoggedUser().Id))
+            foreach (var a in _authorizationContext.GetLoggedUser().UserPolicies.Where(u => u.PolicyType == (PolicyType)1))
             {
                 if (a.PollId == pollId)
                     return true;

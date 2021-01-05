@@ -8,7 +8,6 @@ namespace VoteSystem.Data.Repositories
     public interface IVoteRepository
     {
         void Create(Vote vote);
-        void Update(Vote vote);
         void CreateVoteChoice(VoteChoice voteChoice);
         bool IsVoted(int userId, string pollName);
         Vote GetVote(int voteId);

@@ -110,21 +110,5 @@ namespace VoteSystem.EF.Repositories
                 return voteContext.Users.Include(x => x.UserPolicies).FirstOrDefault(u => u.Email == email);
             }
         }
-
-        public List<UserPolicy> GetAllAdminPolicies(int userId)
-        {
-            using (VoteContext voteContext = new VoteContext())
-            { 
-                return voteContext.UserPolicies.Where(u => (u.user.Id == userId) && (u.PolicyType == (PolicyType)1)).ToList();
-            }
-        }
-
-        public List<UserPolicy> GetAllAccessPolicies(int userId)
-        {
-            using (VoteContext voteContext = new VoteContext())
-            {
-                return voteContext.UserPolicies.Where(u => (u.user.Id == userId) && (u.PolicyType == (PolicyType)0)).ToList();
-            }
-        }
     }
 }

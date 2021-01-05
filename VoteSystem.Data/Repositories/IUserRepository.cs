@@ -18,7 +18,5 @@ namespace VoteSystem.Data.Repositories
         public User GetUser(string email);
         public int GetUserId(string name);
         public int GetRegionId(int userId);
-        public List<UserPolicy> GetAllAdminPolicies(int userId);
-        public List<UserPolicy> GetAllAccessPolicies(int userId);
     }
 }

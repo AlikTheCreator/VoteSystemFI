@@ -11,21 +11,18 @@ namespace VoteSystem.Domain.DefaultImplementations
 {
     public class PollService : IPollService
     {
-        IUserRepository _userRepos;
-        IRegionRepository _regionRepos;
         IPollRepository _pollRepos;
         IManagePolicy _managePolicy;
         IVoteService _voteService;
         IPolicyChecker _policyChecker;
         IVoteRepository _voteRepos;
         IAuthorizationContext _contextRegistration;
-        public PollService(IAuthorizationContext contextRegistration, IRegionRepository regionRepository, 
+        public PollService(IAuthorizationContext contextRegistration,
                            IPollRepository pollRepository, IManagePolicy managePolicy,
                            IVoteService voteService, IPolicyChecker policyChecker, IVoteRepository voteRepository)
         {
             _voteRepos = voteRepository;
             _managePolicy = managePolicy;
-            _regionRepos = regionRepository;
             _pollRepos = pollRepository;
             _voteService = voteService;
             _policyChecker = policyChecker;
