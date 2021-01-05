@@ -55,7 +55,7 @@ namespace VoteSystem.EF.Repositories
         {
             using (var ctx = new VoteContext())
             {
-                return ctx.Votes.Where(u => u.UserId == userId).ToList();
+                return ctx.Votes.Include(v => v.VoteChoices).Where(u => u.UserId == userId).ToList();
             }
         }
         public Dictionary<string, int> GetResultInPoll(int pollId)
@@ -96,17 +96,5 @@ namespace VoteSystem.EF.Repositories
         {
             throw new NotImplementedException();
         }
-
-        public bool ExistingUser(int userId)
-        {
-            using (var ctx = new VoteContext())
-            {
-                return ctx.Votes.Any(u => u.UserId == userId);
-            }
-        }
-        //public List<VoteChoice> GetVoteChoices(int choiceId)
-        //{ 
-            
-        //}
     }
 }

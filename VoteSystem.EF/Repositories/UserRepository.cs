@@ -39,8 +39,6 @@ namespace VoteSystem.EF.Repositories
                         return true;
                     }
                 }
-                else
-                return false;
                 return false;
             }
         }
@@ -49,7 +47,7 @@ namespace VoteSystem.EF.Repositories
         {
             using (VoteContext voteContext = new VoteContext())
             {
-                return voteContext.Users.ToList().Where(u => u.RegionId == regionId).ToList();
+                return voteContext.Users.Include(u => u.UserPolicies).ToList().Where(u => u.RegionId == regionId).ToList();
             }
         }
 
@@ -58,16 +56,6 @@ namespace VoteSystem.EF.Repositories
             using (VoteContext voteContext = new VoteContext())
             {
                 return voteContext.Users.FirstOrDefault(u => u.Id == userId).RegionId == regionId;
-            }
-        }
-
-        public void UpdateUser(User user)
-        {
-            using (VoteContext voteContext = new VoteContext())
-            {
-                User usertemp = voteContext.Users.FirstOrDefault(u => u.Id == user.Id);
-                usertemp = user;
-                voteContext.SaveChangesAsync();
             }
         }
 

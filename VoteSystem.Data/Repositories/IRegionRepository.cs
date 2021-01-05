@@ -8,7 +8,6 @@ namespace VoteSystem.Data.Repositories
     public interface IRegionRepository
     {
         void CreateRegion(Region region);
-        void UpdateRegion(Region region);
         public Region Get(int id);
         public int GetRegiondIdByName(string name);
         public List<int> GetAllPollIdsForRegionPolicies(int id);

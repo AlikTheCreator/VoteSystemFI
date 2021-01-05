@@ -17,9 +17,6 @@ namespace VoteSystem.Cosnole
     {
         static void Main(string[] args)
         {
-            var collection = new ServiceCollection();
-            collection.AddScoped<IPollRepository, PollRepository>();
-
             IKernel kernel = new StandardKernel();
             
             #region BindingOnly
@@ -44,14 +41,8 @@ namespace VoteSystem.Cosnole
             var policyChecker = kernel.Get<IPolicyChecker>();
             var voteService = kernel.Get<IVoteService>();
             var pollService = kernel.Get<IPollService>();
-            //new PollService(kernel.Get<IAuthorizationContext>(), kernel.Get<IRegionRepository>(),
-            //                                      kernel.Get<IPollRepository>(), kernel.Get<IManagePolicy>(), 
-            //                                      kernel.Get<IVoteService>(), kernel.Get<IPolicyChecker>(), kernel.Get<IVoteRepository>());
-            var userInterface = new UserInterface(kernel.Get<IUserRepository>(),
-                                                            kernel.Get<IAuthorizationContext>(),
-                                                            kernel.Get<IPollRepository>(),
-                                                            kernel.Get<IPolicyChecker>(),
-                                                            kernel.Get<IPollService>());
+
+            var userInterface = kernel.Get<UserInterface>();
             #endregion
             while (true)
             {

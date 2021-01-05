@@ -14,6 +14,5 @@ namespace VoteSystem.Data.Repositories
         Vote GetVote(int voteId);
         List<Vote> GetAllForUser(int userId);
         Dictionary<string, int> GetResultInPoll(int pollId);
-        bool ExistingUser(int userId);
     }
 }

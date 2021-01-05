@@ -19,21 +19,13 @@ namespace VoteSystem.EF.Repositories
                 return poll.Id;
             }
         }
-        public void CreateChoice(Choice choice, int pollId)
+        public void CreateChoice(Choice choice)
         {
             using (var ctx = new VoteContext())
             {
                 ctx.Polls.Attach(choice.Poll);
                 ctx.Entry(choice.Poll).State = System.Data.Entity.EntityState.Unchanged;
                 ctx.Choices.Add(choice);
-                ctx.SaveChanges();
-            }
-        }
-        public void AddChoiceToPoll(Choice choice, int pollId)
-        {
-            using (var ctx = new VoteContext())
-            {
-                ctx.Polls.FirstOrDefault(p => p.Id == pollId).Choices.Add(choice);
                 ctx.SaveChanges();
             }
         }
@@ -62,17 +54,7 @@ namespace VoteSystem.EF.Repositories
         {
             using (var ctx = new VoteContext())
             {
-                return ctx.Polls.ToList();
-            }
-        }
-        public void Update(Poll poll)
-        {
-            using (var ctx = new VoteContext())
-            {
-                ctx.Polls.FirstOrDefault(p => p.Id == poll.Id).Name = poll.Name;
-                ctx.Polls.FirstOrDefault(p => p.Id == poll.Id).Description = poll.Description;
-                ctx.Polls.FirstOrDefault(p => p.Id == poll.Id).Choices = poll.Choices;
-                ctx.SaveChangesAsync();
+                return ctx.Polls.Include(r => r.Choices).ToList();
             }
         }
     }

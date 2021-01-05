@@ -41,7 +41,7 @@ namespace VoteSystem.Domain.DefaultImplementations
                 Poll = _pollRepos.Get(_pollRepos.GetPolls().FirstOrDefault(p => p.Id == choiceCreation.pollId).Name)
             };
             _pollRepos.Get(choiceCreation.pollId).Choices.Add(choice);
-            _pollRepos.CreateChoice(choice, choiceCreation.pollId);
+            _pollRepos.CreateChoice(choice);
             return choice;
         }
 

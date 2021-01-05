@@ -9,7 +9,6 @@ namespace VoteSystem.Data.Repositories
     {
         void CreateUser(User user);
         void CreateUserPolicy(UserPolicy userPolicy);
-        void UpdateUser(User user);
         bool IsInRegion(int regionId, int userId);
         List<User> GetAllUsersForRegion(int regionId);
         public List<int> GetAllUserPollIdsWithPolicies(int id);

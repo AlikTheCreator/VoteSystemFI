@@ -15,17 +15,7 @@ namespace VoteSystem.EF.Repositories
             using (VoteContext voteContext = new VoteContext())
             {
                 voteContext.Regions.Add(region);
-                voteContext.SaveChangesAsync();
-            }
-        }
-
-        public void UpdateRegion(Region region)
-        {
-            using (VoteContext voteContext = new VoteContext())
-            {
-                Region regiontemp = voteContext.Regions.FirstOrDefault(r => r.Id == region.Id);
-                regiontemp = region;
-                voteContext.SaveChangesAsync();
+                voteContext.SaveChanges();
             }
         }
         public Region Get(int id)
@@ -39,7 +29,7 @@ namespace VoteSystem.EF.Repositories
         {
             using (VoteContext voteContext = new VoteContext())
             {
-                return voteContext.Regions.Include(r => r.RegionPolicies).FirstOrDefault(r => r.Name == name).Id;
+                return voteContext.Regions.FirstOrDefault(r => r.Name == name).Id;
             }
         }
 
